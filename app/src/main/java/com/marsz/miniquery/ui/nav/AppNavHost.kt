@@ -38,12 +38,24 @@ fun AppNavHost(
     val currentUin by vm.currentUin.collectAsStateWithLifecycle()
 
     /**
-     * 从成员列表点某个人查询时：直接换查询目标并回到首页，
-     * 避免在栈里堆积多层页面导致返回键要按很多次。
+     * 从成员列表点某个人查询时：切换查询目标并回到首页。
+     *
+     * 关键修正：使用 `navigate(HOME) + popUpTo(HOME, inclusive = false)`，
+     * 而不是直接 `popBackStack(HOME, ...)`。
+     *
+     * 原因：从深层页面（如 首页→家族列表→家族详情）点击成员时，HOME 并不在
+     * *当前*返回栈的栈顶链路里，`popBackStack` 找不到该 destination 会**静默失败**，
+     * 表现为"点了没反应 / 返回错页"。改用 navigate + popUpTo 主动把栈里所有
+     * 中间页一并清空，无论当前在多深的层级都能可靠回到首页，且只产生一次入栈。
      */
     val queryMember: (String) -> Unit = { uin ->
         vm.search(uin)
-        navController.popBackStack(Routes.HOME, inclusive = false)
+        navController.navigate(Routes.HOME) {
+            // 清空 HOME 之上的所有页面（inclusive=false：保留 HOME 本身）
+            popUpTo(Routes.HOME) { inclusive = false }
+            // 若栈里已有 HOME，复用同一个实例，避免连续查询时栈底堆积多个首页
+            launchSingleTop = true
+        }
     }
 
     NavHost(

@@ -17,8 +17,12 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.IntSize
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.request.ImageRequest.Builder
+import coil.size.Precision
+import coil.size.Scale
 import com.marsz.miniquery.cache.CacheCategory
 import com.marsz.miniquery.cache.ImageCache
 
@@ -29,6 +33,12 @@ import com.marsz.miniquery.cache.ImageCache
  *   设置页可以按分类查看占用并单独清理；
  * - 解码器同时支持 PNG 与 GIF，头像框是动图时可直接播放；
  * - 加载中显示弱色占位块，失败显示占位图标，不会出现空白区域跳动。
+ *
+ * 流畅度优化（针对网格快速滑动掉帧）：
+ * - 通过 [requestSize] 把目标尺寸传给 Coil，配合 [Scale.FILL] + [Precision.EXACT]
+ *   让解码出的 Bitmap 尺寸固定，item 复用时可直接命中内存缓存，不再反复解码；
+ * - [Builder.precision] 设为 EXACT 后 Coil 会按给定 size 复用同一缓存 key，
+ *   大幅减少滚动过程中的 GC 与解码开销。
  */
 @Composable
 fun CachedImage(
@@ -40,7 +50,12 @@ fun CachedImage(
     shape: Shape? = null,
     /** 为 false 时，加载失败/无图直接不绘制（用于头像框这类叠加层，避免灰块挡住底图） */
     showPlaceholder: Boolean = true,
-    placeholderIcon: (@Composable () -> Unit)? = null
+    placeholderIcon: (@Composable () -> Unit)? = null,
+    /**
+     * 目标像素尺寸。网格/列表 item 传入固定宽高后可显著减少滚动解码开销；
+     * 传 null 则由 Compose 按布局尺寸自动计算（默认行为）。
+     */
+    requestSize: IntSize? = null
 ) {
     val context = LocalContext.current
     val loader = remember(category) { ImageCache.loader(context, category) }
@@ -56,10 +71,17 @@ fun CachedImage(
             hasError -> if (showPlaceholder) ImagePlaceholder(placeholderIcon)
             else -> {
                 AsyncImage(
-                    model = remember(url) {
-                        ImageRequest.Builder(context)
+                    model = remember(url, requestSize) {
+                        Builder(context)
                             .data(url)
                             .crossfade(false)
+                            .apply {
+                                if (requestSize != null) {
+                                    size(requestSize.width, requestSize.height)
+                                    scale(Scale.FILL)
+                                    precision(Precision.EXACT)
+                                }
+                            }
                             .build()
                     },
                     contentDescription = contentDescription,

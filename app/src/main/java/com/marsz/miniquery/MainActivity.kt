@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.marsz.miniquery.data.prefs.AppPrefs
 import com.marsz.miniquery.ui.nav.AppNavHost
@@ -55,7 +57,6 @@ class MainActivity : ComponentActivity() {
 
             MiniQueryTheme(
                 themeMode = AppPrefs.themeMode,
-                dynamicColor = AppPrefs.dynamicColor
             ) {
                 AppRoot(
                     twoPane = twoPane,
@@ -123,11 +124,17 @@ private fun AppRoot(
     // 金标 / 个保法：涉及个人信息处理前须取得用户明示同意，仅首次安装触发一次
     var consentGiven by remember { mutableStateOf(AppPrefs.isPrivacyAccepted(context)) }
 
-    BackHandler(enabled = true) {
-        // 还有上层页面就先出栈，否则交给退出确认逻辑
-        if (!navController.popBackStack()) {
-            activity?.let { handleExit(it) }
-        }
+    // 二级页面返回键修复：
+    // 实时跟踪当前路由，只有"在首页"时才启用退出确认（enabled=true 会拦截系统返回键）；
+    // 在二级页时 BackHandler 的 enabled=false，完全不拦截，返回键原样交给 NavHost 出栈，
+    // 避免原实现 "enabled 恒为 true + popBackStack() 返回值判断" 在某些栈状态下吞掉返回事件，
+    // 表现为"二级页按返回没反应 / 要多按几次"。
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val onHome = backStackEntry?.destination?.route == Routes.HOME
+
+    BackHandler(enabled = onHome) {
+        // 只有首页才走"再按一次退出"；二级页 BackHandler 未启用，不会拦截
+        activity?.let { handleExit(it) }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

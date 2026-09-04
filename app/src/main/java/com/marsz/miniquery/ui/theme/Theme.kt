@@ -1,7 +1,6 @@
 package com.marsz.miniquery.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +9,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.marsz.miniquery.data.prefs.ThemeMode
@@ -78,18 +76,6 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun MiniQueryTheme(
     themeMode: ThemeMode = ThemeMode.FOLLOW_SYSTEM,
-    /**
-     * 动态配色（Material You，Android 12+）——已强制停用。
-     *
-     * 该特性会让系统用**壁纸颜色**接管整套配色：壁纸是蓝色，界面背景、卡片、
-     * 图标就全部变蓝，与设计稿的中性配色完全冲突，且每个用户看到的都不一样。
-     *
-     * 这里刻意忽略传入的参数值：即使 SharedPreferences 里存过 true
-     * （已存盘值的优先级高于默认值，光改默认值清不掉），也一律按关闭处理。
-     * 需要重新启用时，把下面的 `false` 改回 `dynamicColor` 即可。
-     */
-    @Suppress("UNUSED_PARAMETER")
-    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -98,11 +84,9 @@ fun MiniQueryTheme(
         ThemeMode.DARK -> true
     }
 
-    // 始终使用固定配色，不从壁纸取色
-    val colorScheme = when {
-        darkTheme -> DarkColors
-        else -> LightColors
-    }
+    // 使用固定的浅色/深色配色，不随系统壁纸变化（设计稿为中性配色，
+    // Material You 动态取色会与设计稿冲突，故整体不使用）。
+    val colorScheme = if (darkTheme) DarkColors else LightColors
 
     MaterialTheme(
         colorScheme = colorScheme,

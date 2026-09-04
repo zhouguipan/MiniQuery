@@ -21,7 +21,6 @@ object AppPrefs {
 
     private const val FILE = "mini_query_prefs"
     private const val KEY_THEME = "theme_mode"
-    private const val KEY_DYNAMIC = "dynamic_color"
     private const val KEY_LAST_UIN = "last_uin"
     private const val KEY_HISTORY = "history"
     private const val KEY_ANIM = "reduce_anim"
@@ -35,9 +34,6 @@ object AppPrefs {
     var themeMode by mutableStateOf(ThemeMode.FOLLOW_SYSTEM)
         private set
 
-    var dynamicColor by mutableStateOf(false)
-        private set
-
     var reduceAnim by mutableStateOf(false)
         private set
 
@@ -46,9 +42,6 @@ object AppPrefs {
         val p = prefs(context)
         themeMode = runCatching { ThemeMode.valueOf(p.getString(KEY_THEME, ThemeMode.FOLLOW_SYSTEM.name)!!) }
             .getOrDefault(ThemeMode.FOLLOW_SYSTEM)
-        // 强制关闭：即使磁盘里存过 true 也一律按 false，
-        // 与 Theme.kt 中停用动态配色的逻辑保持一致，避免设置页显示"开"但实际没生效
-        dynamicColor = false
         reduceAnim = p.getBoolean(KEY_ANIM, false)
     }
 
@@ -57,13 +50,6 @@ object AppPrefs {
     fun setThemeMode(context: Context, mode: ThemeMode) {
         themeMode = mode
         prefs(context).edit().putString(KEY_THEME, mode.name).apply()
-    }
-
-    /* ==================== 动态配色 ==================== */
-
-    fun setDynamicColor(context: Context, enabled: Boolean) {
-        // 动态配色已在 Theme.kt 中整体停用，此处不落盘，避免状态与实际不一致
-        dynamicColor = false
     }
 
     /* ==================== 减弱动画 ==================== */

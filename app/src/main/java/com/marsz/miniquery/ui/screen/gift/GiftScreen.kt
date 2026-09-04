@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CardGiftcard
@@ -50,6 +53,11 @@ fun GiftScreen(
     val gifts by vm.gifts.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.loadGifts() }
 
+    // 流畅度优化：礼物图标是固定 40dp，解码尺寸写死，滚动时直接命中内存缓存。
+    val density = LocalDensity.current
+    val iconSize = remember(density) { with(density) { 40.dp.roundToPx() } }
+    val iconIntSize = remember(iconSize) { IntSize(iconSize, iconSize) }
+
     AppScaffold(title = "礼物", onBack = onBack, modifier = modifier) { padding ->
         StateContent(
             state = gifts,
@@ -70,9 +78,11 @@ fun GiftScreen(
             ) {
                 itemsIndexed(
                     items = gifts.data.orEmpty(),
-                    key = { index, item -> "${item.id}_${item.name}_$index" }
+                    key = { index, item ->
+                        item.id?.ifBlank { null } ?: "gift_$index"
+                    }
                 ) { _, gift ->
-                    GiftCard(gift = gift)
+                    GiftCard(gift = gift, iconSize = iconIntSize)
                 }
             }
         }
@@ -82,6 +92,7 @@ fun GiftScreen(
 @Composable
 private fun GiftCard(
     gift: GiftItem,
+    iconSize: IntSize,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -105,6 +116,7 @@ private fun GiftCard(
                     category = CacheCategory.GIFT,
                     contentDescription = gift.name,
                     contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                    requestSize = iconSize,
                     modifier = Modifier
                         .padding(8.dp)
                         .size(40.dp)

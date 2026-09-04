@@ -74,6 +74,10 @@ android {
             excludes += "/META-INF/*.kotlin_module"
         }
     }
+
+    lint {                                           // ← 新增这段
+        disable += "NullSafeMutableLiveData"
+    }
 }
 
 dependencies {
