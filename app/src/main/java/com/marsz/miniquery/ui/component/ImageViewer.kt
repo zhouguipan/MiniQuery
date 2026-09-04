@@ -11,6 +11,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +30,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.marsz.miniquery.cache.CacheCategory
 import com.marsz.miniquery.cache.ImageCache
+import com.marsz.miniquery.util.ImageSaver
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope        // ★ 新增
+import kotlinx.coroutines.launch                          // ★ 新增
 
 /**
  * 全屏图片预览。
@@ -52,6 +56,8 @@ fun ImageViewerDialog(
     val pagerState = rememberPagerState(
         initialPage = initialIndex.coerceIn(0, urls.lastIndex)
     ) { urls.size }
+
+    val scope = rememberCoroutineScope()   // ★ 新增：协程作用域
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -123,6 +129,28 @@ fun ImageViewerDialog(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
+            }
+
+            // ★★★ 保存按钮（右上角，Close 左侧）
+            IconButton(
+                onClick = {
+                    val url = urls.getOrNull(pagerState.currentPage)
+                    if (url != null) {
+                        scope.launch {                          // ★ 协程
+                            ImageSaver.save(context, url)       // ★ 去掉 category
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 48.dp, top = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Download,
+                    contentDescription = "保存到相册",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
 
             IconButton(

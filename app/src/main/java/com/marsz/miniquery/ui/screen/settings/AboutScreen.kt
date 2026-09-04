@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AlternateEmail
-import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material3.Icon
@@ -113,10 +113,10 @@ fun AboutScreen(
                             trailingAction = "复制"
                         )
                         AboutItem(
-                            icon = Icons.Outlined.Code,
-                            label = "QQ 交流",
-                            value = "点击跳转 QQ 临时会话",
-                            onClick = { openQq(context, QQ) }
+                            icon = Icons.Outlined.Group,
+                            label = "加入QQ群",
+                            value = "点击加入官方 QQ 群",
+                            onClick = { openGroup(context) }
                         )
                     }
                 }
@@ -146,7 +146,7 @@ fun AboutScreen(
 
             item(key = "footer") {
                 Text(
-                    text = "数据来自第三方接口，仅供查询参考",
+                    text = "数据来自官方接口，仅供查询参考",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -227,5 +227,26 @@ private fun openQq(context: Context, qq: String) {
         val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://wpa.qq.com/msgrd?v=3&uin=$qq&site=qq&menu=yes"))
         runCatching { context.startActivity(web) }
             .onFailure { copyToClipboard(context, "QQ", qq) }
+    }
+}
+/** 你的官方 QQ 群链接（来自 qun.qq.com 加群页） */
+private const val QQ_GROUP_URL =
+    "https://qun.qq.com/universal-share/share?ac=1" +
+            "&authKey=rDm38vq3x5Z/48uAjyzdTOxU1gW8feXTVoRYPNaGgWsqfU2DoUFrYGaGnRF6UNjX" +
+            "&busi_data=eyJncm91cENvZGUiOiI4OTI2NjE3MDIiLCJ0b2tlbiI6ImNvNkpvN2xWdE01Q0VCTXhMcURrNUFkRWJRT3RYaUkxZ1dTcWZVb3YvV2RDaFJoNmhsdXBGbVBzN3dXSTI5Q1kiLCJ1aW4iOiI0ODMwMTgyNTkifQ==" +
+            "&data=qUBcRYd794O52MBYRNg3JYIjIzSD0OjpnOFYS0mPqbJCtIPcSmfQbQ5vS5DSTGt9fVzSvBIogvesf5zjRu1tqe9u9M3wCnnTTKbNElp4BuY" +
+            "&svctype=5&tempid=h5_group_info"
+
+/** 拉起 QQ 加群页；未装 QQ 则降级用浏览器打开链接 */
+private fun openGroup(context: Context) {
+    // 优先尝试用 QQ 处理
+    val qq = Intent(Intent.ACTION_VIEW, Uri.parse(QQ_GROUP_URL)).apply {
+        `package` = "com.tencent.mobileqq"
+    }
+    runCatching { context.startActivity(qq) }.onFailure {
+        // QQ 未安装 → 浏览器打开同一链接
+        val web = Intent(Intent.ACTION_VIEW, Uri.parse(QQ_GROUP_URL))
+        runCatching { context.startActivity(web) }
+            .onFailure { Toast.makeText(context, "无法打开加群页", Toast.LENGTH_SHORT).show() }
     }
 }

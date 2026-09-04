@@ -29,11 +29,11 @@ enum class CacheCategory(
     /** 内存缓存上限（MB），低端设备会自动减半 */
     val memMb: Int
 ) {
-    AVATAR("avatar", "头像", 40, 8),
-    HEADFRAME("headframe", "头像框", 30, 6),
-    SKIN("skin", "皮肤图片", 60, 10),
+    AVATAR("avatar", "头像", 100, 8),
+    HEADFRAME("headframe", "头像框", 100, 6),
+    SKIN("skin", "皮肤图片", 100, 10),
     GIFT("gift", "礼物图标", 20, 5),
-    MAP("map", "地图封面", 50, 8),
+    MAP("map", "地图封面", 500, 6),
     ALBUM("album", "相册图片", 100, 6),
     FAMILY("family", "家族旗帜", 20, 4),
 }

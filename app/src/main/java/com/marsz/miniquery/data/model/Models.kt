@@ -131,6 +131,7 @@ data class RoomInfo(
     val version: String? = null,
     val apiid: String? = null,
     val create_time: String? = null,
+    val device: String? = null,
     val start_time: String? = null,
     val thumbnail: String? = null,
     val members: List<RoomMember>? = null,
@@ -209,7 +210,8 @@ data class SkinResp(
 data class SkinItem(
     val id: String? = null,
     val name: String? = null,
-    val head: String? = null              // 角色图标编号
+    val head: String? = null,              // 角色图标编号
+    val cos_url: String?
 )
 
 data class GiftResp(

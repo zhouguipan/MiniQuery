@@ -87,7 +87,7 @@ fun MemberRowView(
         ) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "加入",
+                    text = "添加时间",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )

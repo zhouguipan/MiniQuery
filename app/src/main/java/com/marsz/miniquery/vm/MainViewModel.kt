@@ -12,6 +12,7 @@ import com.marsz.miniquery.data.model.MapItem
 import com.marsz.miniquery.data.model.MemberRole
 import com.marsz.miniquery.data.model.MemberRow
 import com.marsz.miniquery.data.model.NowProfile
+import com.marsz.miniquery.data.model.RelationItem
 import com.marsz.miniquery.data.model.RoomData
 import com.marsz.miniquery.data.model.SkinItem
 import com.marsz.miniquery.data.model.TrackingData
@@ -21,6 +22,7 @@ import com.marsz.miniquery.data.prefs.AppPrefs
 import com.marsz.miniquery.data.repo.ProfileRepository
 import com.marsz.miniquery.data.repo.ProfileRepository.networkError
 import com.marsz.miniquery.util.formatJoinTime
+import com.marsz.miniquery.util.formatUnixTime
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +41,12 @@ private const val PROFILE_BATCH_SIZE = 80
 
 /** 批量资料缓存上限，防止大量家族成员查询导致内存无限增长 */
 private const val PROFILE_CACHE_MAX = 2000
+
+/** 关系列表：uin 小于此值的迷你号不显示（如 1 / 4 / 100 等注销小号） */
+const val MINI_UIN_THRESHOLD = 1000L
+
+/** 关系列表类型，用于区分"加入时间"文案来源（当前统一取 mark 时间戳） */
+private enum class RelationKind { FRIEND, FOLLOW, BLACK }
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -97,6 +105,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _maps = MutableStateFlow(TabState<List<MapItem>>())
     val maps: StateFlow<TabState<List<MapItem>>> = _maps.asStateFlow()
+
+    /* ==================== 关系列表：好友 / 关注 / 黑名单 ==================== */
+    /* 展示层统一用 MemberRow，可直接喂给 MemberRowView，与家族成员列表样式一致。 */
+
+    private val _friendList = MutableStateFlow(TabState<List<MemberRow>>())
+    val friendList: StateFlow<TabState<List<MemberRow>>> = _friendList.asStateFlow()
+
+    private val _followList = MutableStateFlow(TabState<List<MemberRow>>())
+    val followList: StateFlow<TabState<List<MemberRow>>> = _followList.asStateFlow()
+
+    private val _blacklist = MutableStateFlow(TabState<List<MemberRow>>())
+    val blacklist: StateFlow<TabState<List<MemberRow>>> = _blacklist.asStateFlow()
 
     private val _events = MutableSharedFlow<UiEvent>(extraBufferCapacity = 8)
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
@@ -200,6 +220,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _gifts.value = TabState()
         _album.value = TabState()
         _maps.value = TabState()
+        _friendList.value = TabState()
+        _followList.value = TabState()
+        _blacklist.value = TabState()
     }
 
     /* ==================== 状态 / 队伍 ==================== */
@@ -519,4 +542,83 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     /** 相册图片 URL 列表（供大图预览使用） */
     fun albumUrls(): List<String> = _album.value.data ?: emptyList()
+
+    /* ==================== 关系列表：好友 / 关注 / 黑名单 ==================== */
+
+    /**
+     * [RelationItem] → [MemberRow]。
+     * - 昵称**原样**显示（不剥离 #cff02ff / [i][b] 等标记，按需求）。
+     * - "加入/添加时间"取自 [RelationItem.mark]（服务端返回的 Unix 时间戳，
+     *   好友=加好友时间、关注=关注时间、黑名单=拉黑时间）。
+     */
+    private fun RelationItem.toMemberRow(roleText: String, role: MemberRole): MemberRow {
+        val uinStr = uin.toString()
+        return MemberRow(
+            uin = uinStr,
+            name = nickname?.takeIf { it.isNotBlank() } ?: "未命名",
+            avatarUrl = Api.defaultAvatar,
+            headframeUrl = Api.headframe(null),
+            roleText = roleText,
+            role = role,
+            // ★ 先用 mark 作为占位，loadRelationList 会用 fetchProfiles 补全真实头像
+            // ★ 时间列统一取 mark 时间戳，格式化失败回退 "-"
+            joinTimeText = formatUnixTime(mark),
+            sortWeight = 0
+        )
+    }
+
+    private fun List<RelationItem>.filterMiniAndConvert(
+        roleText: String,
+        role: MemberRole
+    ): List<MemberRow> = filter { it.uin >= MINI_UIN_THRESHOLD }
+        .map { it.toMemberRow(roleText, role) }
+
+    private fun loadRelationList(
+        force: Boolean,
+        state: MutableStateFlow<TabState<List<MemberRow>>>,
+        fetcher: suspend () -> List<RelationItem>,
+        roleText: String,
+        role: MemberRole
+    ) {
+        val st = state.value
+        if (!force && (st.loading || st.loaded)) return
+        state.value = st.copy(loading = true, error = null)
+        viewModelScope.launch {
+            runCatching {
+                val raw = fetcher()
+                val rows = raw.filterMiniAndConvert(roleText, role)
+                // 用批量资料接口补全真实头像（昵称保留原样，不覆盖）
+                if (rows.isNotEmpty()) {
+                    val profiles = fetchProfiles(rows.map { it.uin })
+                    rows.map { row ->
+                        profiles[row.uin]?.let { p ->
+                            row.copy(avatarUrl = p.avatar, headframeUrl = p.headframe)
+                        } ?: row
+                    }
+                } else rows
+            }.onSuccess { rows ->
+                state.value = TabState(loaded = true, data = rows)
+            }.onFailure {
+                state.value = TabState(error = networkError(it))
+            }
+        }
+    }
+
+    /** 好友：relation 多为 8 */
+    fun loadFriendList(force: Boolean = false) {
+        val uin = _currentUin.value ?: return
+        loadRelationList(force, _friendList, { ProfileRepository.friendList(uin) }, "好友", MemberRole.NORMAL)
+    }
+
+    /** 关注 */
+    fun loadFollowList(force: Boolean = false) {
+        val uin = _currentUin.value ?: return
+        loadRelationList(force, _followList, { ProfileRepository.followList(uin) }, "关注", MemberRole.NORMAL)
+    }
+
+    /** 黑名单：relation 多为 64 */
+    fun loadBlacklist(force: Boolean = false) {
+        val uin = _currentUin.value ?: return
+        loadRelationList(force, _blacklist, { ProfileRepository.blacklist(uin) }, "黑名单", MemberRole.NORMAL)
+    }
 }

@@ -16,5 +16,9 @@ object Routes {
 
     const val ARG_FAMILY_ID = "familyId"
 
+    const val FRIEND_LIST = "friend_list"
+    const val FOLLOW_LIST = "follow_list"
+    const val BLACKLIST = "blacklist"
+
     fun familyDetail(id: Long) = "family_detail/$id"
 }

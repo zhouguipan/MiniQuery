@@ -6,7 +6,8 @@ package com.marsz.miniquery.data.net
  */
 object Api {
 
-    const val BASE = "http://81.71.23.66:18088"
+    /*const val BASE = "http://81.71.23.66:18088"*/
+    const val BASE = "http://api-v2.4001314.xyz:18808"
 
     private const val API = "$BASE/mnw1/api"
 
@@ -35,6 +36,12 @@ object Api {
 
     fun mapList(uin: String) = "$API?act=get_profile_maps&uin=$uin"
 
+    /* ==================== 关系列表：好友 / 关注 / 黑名单 ==================== */
+
+    fun friendListUrl(uin: String) = "$API?act=get_friend_list&uin=$uin"
+    fun followListUrl(uin: String) = "$API?act=get_follow_list&uin=$uin"
+    fun blacklistUrl(uin: String)  = "$API?act=get_blacklist&uin=$uin"
+
     /* ==================== 静态资源 ==================== */
 
     /** 角色头像 */
@@ -58,5 +65,5 @@ object Api {
     val unknownMapCover = "$BASE/mini/res/map/unknown.png"
 
     /** 表情图集（远程，可覆盖内置的 assets/emoticon.png） */
-    val emoticonAtlas = "$BASE/emoticon.png"
+    val emoticonAtlas = "$BASE/mini/res/emoticon.png"
 }

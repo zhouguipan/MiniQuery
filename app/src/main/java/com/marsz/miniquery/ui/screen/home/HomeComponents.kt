@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.Checkroom
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.SportsEsports
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -126,7 +129,10 @@ enum class HomeEntry(
     GIFT("礼物", Icons.Outlined.CardGiftcard, com.marsz.miniquery.ui.nav.Routes.GIFT),
     MAP("地图", Icons.Outlined.Map, com.marsz.miniquery.ui.nav.Routes.MAP),
     ALBUM("相册", Icons.Outlined.PhotoLibrary, com.marsz.miniquery.ui.nav.Routes.ALBUM),
-    ROOM("房间", Icons.Outlined.SportsEsports, com.marsz.miniquery.ui.nav.Routes.ROOM)
+    ROOM("房间", Icons.Outlined.SportsEsports, com.marsz.miniquery.ui.nav.Routes.ROOM),
+    FRIEND("好友", Icons.Outlined.People, com.marsz.miniquery.ui.nav.Routes.FRIEND_LIST),
+    FOLLOW("关注", Icons.Outlined.PersonAdd, com.marsz.miniquery.ui.nav.Routes.FOLLOW_LIST),
+    BLACK("黑名单", Icons.Outlined.Block, com.marsz.miniquery.ui.nav.Routes.BLACKLIST)
 }
 
 @Composable

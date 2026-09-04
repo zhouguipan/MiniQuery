@@ -12,7 +12,7 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 2
-        versionName = "2.0.0"
+        versionName = "2.1.1"
     }
 
     signingConfigs {
@@ -73,6 +73,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/*.kotlin_module"
         }
+    }
+
+    lint {                                           // ← 新增这段
+        disable += "NullSafeMutableLiveData"
     }
 }
 

@@ -23,7 +23,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,7 +49,7 @@ import com.marsz.miniquery.util.formatSize
 
 /**
  * 设置页。
- * 主题 / 动态配色 / 分类缓存管理 / 关于入口。
+ * 主题模式 / 分类缓存管理 / 隐私与安全 / 关于入口。
  */
 @Composable
 fun SettingsScreen(
@@ -87,13 +86,6 @@ fun SettingsScreen(
                             title = "主题模式",
                             subtitle = AppPrefs.themeMode.label,
                             onClick = { showThemeDialog = true }
-                        )
-
-                        SettingsSwitchItem(
-                            title = "动态配色",
-                            subtitle = "从壁纸取色（Android 12 及以上）",
-                            checked = AppPrefs.dynamicColor,
-                            onCheckedChange = { AppPrefs.setDynamicColor(context, it) }
                         )
                     }
                 }
@@ -283,39 +275,6 @@ private fun SettingsItem(
                 modifier = Modifier.size(18.dp)
             )
         }
-    }
-}
-
-@Composable
-private fun SettingsSwitchItem(
-    title: String,
-    subtitle: String? = null,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            subtitle?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 

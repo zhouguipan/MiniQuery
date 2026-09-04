@@ -36,6 +36,7 @@ import com.marsz.miniquery.ui.component.SectionCard
 import com.marsz.miniquery.ui.component.StateContent
 import com.marsz.miniquery.ui.theme.Dimens
 import com.marsz.miniquery.vm.MainViewModel
+import com.marsz.miniquery.vm.TabState
 
 /**
  * 家族列表页。
@@ -54,7 +55,8 @@ fun FamilyListScreen(
     onQueryMember: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val families by vm.families.collectAsStateWithLifecycle()
+    // 只在此处订阅一次 StateFlow；TabState<List<FamilyDetail>> 是原工程真实类型
+    val families: TabState<List<FamilyDetail>> by vm.families.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) { vm.loadFamilies() }
 
@@ -76,9 +78,10 @@ fun FamilyListScreen(
                 Box(modifier = Modifier.weight(0.4f)) {
                     // 两栏模式下列表自带外边距，右侧详情贴边即可，避免中间出现双倍留白
                     FamilyListBody(
-                        vm = vm,
+                        families = families,
                         highlightedId = selectedId,
                         onOpenDetail = { selectedId = it },
+                        onRetry = { vm.loadFamilies(force = true) },
                         contentPadding = PaddingValues(0.dp)
                     )
                 }
@@ -107,9 +110,10 @@ fun FamilyListScreen(
         } else {
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 FamilyListBody(
-                    vm = vm,
+                    families = families,
                     highlightedId = null,
-                    onOpenDetail = onOpenDetail
+                    onOpenDetail = onOpenDetail,
+                    onRetry = { vm.loadFamilies(force = true) }
                 )
             }
         }
@@ -118,33 +122,38 @@ fun FamilyListScreen(
 
 @Composable
 private fun FamilyListBody(
-    vm: MainViewModel,
+    families: TabState<List<FamilyDetail>>,
     highlightedId: Long?,
     onOpenDetail: (Long) -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(
         horizontal = Dimens.ScreenPadding,
         vertical = 6.dp
     )
 ) {
-    val families by vm.families.collectAsStateWithLifecycle()
+    // 卡顿优化：此处不再 collectAsStateWithLifecycle(vm.families)，改为由外层传入，
+    // 避免同一 StateFlow 被父子组件各订阅一次 → 每次更新双重组。
 
     StateContent(
         state = families,
         modifier = modifier,
         emptyText = "该玩家还没有加入家族",
         emptyIcon = Icons.Outlined.Groups,
-        onRetry = { vm.loadFamilies(force = true) }
+        onRetry = onRetry
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(Dimens.CardGap)
         ) {
+            // 显式标注 lambda 参数类型 FamilyDetail，杜绝 items(Array)/items(List) 重载歧义；
+            // 同时声明稳定 contentType，提升滚动复用时帧率。
             items(
                 items = families.data.orEmpty(),
-                key = { it.id }
-            ) { family ->
+                key = { it.id },
+                contentType = { "family_item" },
+            ) { family: FamilyDetail ->
                 FamilyListItem(
                     family = family,
                     highlighted = family.id == highlightedId,

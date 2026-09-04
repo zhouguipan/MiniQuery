@@ -8,6 +8,8 @@ import com.marsz.miniquery.data.model.GiftResp
 import com.marsz.miniquery.data.model.MapResp
 import com.marsz.miniquery.data.model.NowProfile
 import com.marsz.miniquery.data.model.ProfileItem
+import com.marsz.miniquery.data.model.RelationItem
+import com.marsz.miniquery.data.model.RelationListResp
 import com.marsz.miniquery.data.model.RoomResp
 import com.marsz.miniquery.data.model.SkinResp
 import com.marsz.miniquery.data.model.TrackingResp
@@ -119,6 +121,23 @@ object ProfileRepository {
         if (resp.code != 0) throw ApiException(resp.code, errorText(resp.code, null))
         return resp
     }
+
+    /* ==================== 关系列表：好友 / 关注 / 黑名单 ==================== */
+
+    /**
+     * 拉取关系列表（好友 / 关注 / 黑名单），返回原始 [RelationItem] 列表。
+     * 约定：code == 0 视为成功；其它情况抛 [ApiException]。
+     * 过滤迷你号（uin < 1000）由 ViewModel 层负责，这里保持数据原样。
+     */
+    private suspend fun relationList(url: String): List<RelationItem> {
+        val resp = Http.get<RelationListResp>(url)
+        if (resp.code != 0) throw ApiException(resp.code, errorText(resp.code, null))
+        return resp.list ?: emptyList()
+    }
+
+    suspend fun friendList(uin: String): List<RelationItem> = relationList(Api.friendListUrl(uin))
+    suspend fun followList(uin: String): List<RelationItem> = relationList(Api.followListUrl(uin))
+    suspend fun blacklist(uin: String): List<RelationItem> = relationList(Api.blacklistUrl(uin))
 
     /** 统一的请求失败文案 */
     fun networkError(t: Throwable): String = when (t) {

@@ -86,7 +86,7 @@ fun SkinScreen(
             }
         }
     }
-
+    /*
     viewerIndex?.let { index ->
         ImageViewerDialog(
             urls = list.map { Api.avatar(it.head) },
@@ -96,6 +96,8 @@ fun SkinScreen(
             onDismiss = { viewerIndex = null }
         )
     }
+
+     */
 }
 
 @Composable

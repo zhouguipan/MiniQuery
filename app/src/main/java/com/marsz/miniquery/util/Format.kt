@@ -48,3 +48,8 @@ fun formatSize(bytes: Long): String {
         else -> "$bytes B"
     }
 }
+fun formatUnixTime(ts: Long?): String {
+    if (ts == null || ts <= 0) return "-"
+    val d = java.util.Date(ts * 1000)   // mark 是秒级，同 formatJoinTime
+    return String.format(Locale.CHINA, "%tF %tR", d, d)  // yyyy-MM-dd HH:mm
+}
