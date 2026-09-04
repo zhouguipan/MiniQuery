@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="false"
+        android:xlargeScreens="true" />
+
+    <!-- 平板 / 折叠屏 / 桌面窗口化：必须声明，否则大屏上会被限制为手机尺寸 -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <application
+        android:name=".MiniQueryApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MiniQuery"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true"
+        android:resizeableActivity="true"
+        android:largeHeap="false"
+        android:enableOnBackInvokedCallback="true"
+        tools:targetApi="35">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.MiniQuery"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="keyboard|keyboardHidden|screenSize|smallestScreenSize|density|screenLayout|orientation|uiMode"
+            android:screenOrientation="user">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- 支持从浏览器打开 http://xxx/profile.html?uin=123456 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="81.71.23.66"
+                    android:pathPrefix="/profile.html"
+                    android:scheme="http" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            金标安全：所有 <receiver> / <provider> 默认不可导出。
+            本应用暂无后台推送接收器，若后续接入厂商推送（小米/OPPO/vivo/荣耀），
+            必须在此处显式声明 android:exported="false"，并对导出的接收器做签名校验，
+            禁止任意三方应用通过隐式 Intent 唤醒本进程。
+        -->
+    </application>
+</manifest>

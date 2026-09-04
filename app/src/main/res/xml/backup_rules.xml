@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- 只备份设置项，不备份图片缓存（缓存重建即可，避免备份体积膨胀） -->
+    <include
+        domain="sharedpref"
+        path="mini_query_prefs.xml" />
+    <exclude
+        domain="file"
+        path="image_cache" />
+</full-backup-content>

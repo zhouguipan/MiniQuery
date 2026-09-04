@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">迷你查询</string>
+    <string name="app_subtitle">迷你世界 · 在线查主页</string>
+    <string name="author">Marsz</string>
+    <string name="author_qq">483018259</string>
+    <string name="hint_uin">输入迷你号</string>
+    <string name="action_search">查询</string>
+    <string name="press_back_again">再按一次返回桌面</string>
+</resources>

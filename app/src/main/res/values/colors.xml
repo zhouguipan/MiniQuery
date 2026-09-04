@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        全站不再使用 #2A96FF。
+
+        之前 windowBackground 指向 splash_background（#2A96FF），
+        而 Compose 各页面根布局并未绘制背景，导致蓝色窗口背景直接透出来，
+        改 Color.kt 里的 LightBackground 完全无效——那个值根本没被用到。
+    -->
+
+    <!-- 应用图标底色：中性深灰，仅影响桌面图标外观 -->
+    <color name="ic_launcher_background">#3A3D42</color>
+
+    <!-- 强调色（备用，UI 主要由 Compose 的 Color.kt 控制） -->
+    <color name="brand_neutral">#3A3D42</color>
+
+    <!-- 启动画面背景：中性浅灰，与浅色主题一致 -->
+    <color name="splash_background">#F4F5F7</color>
+
+    <!--
+        窗口背景：Compose 首帧绘制前的兜底底色。
+        真正生效的背景由 MiniQueryTheme 中的 Surface 按浅色/深色自动切换，
+        这里只保证启动瞬间不闪蓝色，因此取中性浅灰。
+    -->
+    <color name="window_background">#F4F5F7</color>
+</resources>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 启动主题（core-splashscreen），启动完成后自动切到 Theme.MiniQuery.Main -->
+    <style name="Theme.MiniQuery" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.MiniQuery.Main</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- 运行期主题：Compose 接管全部内容，这里只负责去掉系统 ActionBar -->
+    <style name="Theme.MiniQuery.Main" parent="android:Theme.Material.Light.NoActionBar">
+        <!--
+            必须是中性色！这里曾指向 splash_background（#2A96FF），
+            导致整个 App 都是蓝底。真正生效的背景由 MiniQueryTheme 的 Surface 绘制，
+            此处仅为 Compose 首帧之前的兜底，避免启动瞬间闪蓝。
+        -->
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+</resources>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 放大镜 + 定位：自适应图标前景层，内容保持在 66dp 安全区内 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 镜框 -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M46,44m-20,0a20,20 0,1 0,40 0a20,20 0,1 0,-40 0"
+        android:strokeWidth="7"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- 手柄 -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M60.5,58.5L75,73"
+        android:strokeWidth="8"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+
+    <!-- 镜内高光，增加辨识度 -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M38,36 L38,40"
+        android:strokeWidth="5"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+</vector>
